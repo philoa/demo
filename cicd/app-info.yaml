@@ -1,0 +1,6 @@
+# 当前应用所属的项目名称，重要，后续很多地方以此命名（Harbor，CDRepo等等）
+projectName: scrm-bl-java
+# 当前应用名称
+appName: admin
+# 当前应用角色，一般为 web 或 backend
+appRole: backend

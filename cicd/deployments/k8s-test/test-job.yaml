@@ -1,0 +1,64 @@
+Services:
+  - deployName_http: test-scrm-linkwechat-job
+    namespace: scrm-bl-java-test
+    labels:
+      env: dynamic-env
+      project: scrm-bl-java
+      role: backend
+      appname: job
+    container:
+      image:
+        pullPolicy: IfNotPresent
+        repo_http: harbor.vchangyi.com/uc-changyi/test-scrm-linkwechat-job
+        tag: test-t1
+        PullSecrets: [ ]
+      volume:
+      resources:
+        cpu_requests: 300m
+        memory_requests: 256Mi
+        cpu_limit: 2000m
+        memory_limit: 4Gi
+      ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+      env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: test
+        - name: JAVA_OPTS
+          value: -Xms256m -Xmx3g
+        - name: pilot_logs_std
+          value: stdout
+        - name: pilot_logs_std_target
+          value: "test-scrm-k8s-linkwechat-json-log"
+        - name: pilot_logs_std_tags
+          value: "stage=test"
+
+    service:
+      type: ClusterIP
+      serviceAccount:
+        create: true
+        name: null
+    replice: 2
+    ingress:
+      hosts:
+        #如果需要切流量，需要PathPrefix后面添加：&& Headers(`Enterprise-hash`,`对应的企业hash`)
+        #并且把Priority的值改为20
+        #例：Host(`crs-api-test.vchangyi.com`) && PathPrefix(`/micro-boss/`,`/(.*)/`)
+        - Host: Host(`scrm-linkwechat-admin-test.cy11.cc`) && PathPrefix(`/job/`,`/(.*)/`)
+          Priority: 10
+          Service:
+            Port: 8080
+            Protocol: "http"
+            Rule: "RoundRobin"
+    hpa:
+      minReplicas: 1
+      maxReplicas: 1
+      memory: 800Mi
+      cpu: 80
+    nodeSelector:
+      env: test
+    podSecurityContext: { }
+    resources: { }
+    securityContext: { }
+    tolerations: [ ]
